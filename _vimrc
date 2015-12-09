@@ -1,3 +1,4 @@
+let $PATH = "~/.pyenv/shims:".$PATH
 "NeoBundle settings{{{1
 if 0 | endif
 if has('vim_starting')
@@ -15,19 +16,28 @@ call neobundle#begin(expand('~/.vim/bundle/'))
     NeoBundleFetch 'Shougo/neobundle.vim'
     NeoBundle 'tpope/vim-surround'
     NeoBundle 'kana/vim-altercmd'
-    NeoBundle 'Townk/vim-autoclose'
+    " NeoBundle 'Townk/vim-autoclose'
     NeoBundle 'thinca/vim-quickrun'
     NeoBundle 'nathanaelkane/vim-indent-guides'
     NeoBundle 'scrooloose/syntastic'
     NeoBundle 'tomtom/tcomment_vim'
     NeoBundleLazy 'tell-k/vim-autopep8',{
-                \ "autoload" : { "filetypes" : ["python"] }}
+          \ "autoload": {
+          \   "filetypes": ["python", "python3", "djangohtml"]
+          \ }}
     NeoBundleLazy 'davidhalter/jedi-vim',{
-                \ "autoload" : { "filetypes" : ["python"] }}
-    "NeoBundle 'jmcantrell/vim-virtualenv'
-    "NeoBundle 'scrooloose/nerdtree'
+          \ "autoload": {
+          \   "filetypes": ["python", "python3", "djangohtml"]
+          \ }}
+    NeoBundleLazy "lambdalisue/vim-pyenv", {
+          \ "depends": ['davidhalter/jedi-vim'],
+          \ "autoload": {
+          \   "filetypes": ["python", "python3", "djangohtml"]
+          \ }}
+    " NeoBundle 'jmcantrell/vim-virtualenv'
+    " Neobundle 'scrooloose/nerdtree'
 call neobundle#end()
-"NeoBundleCheck
+"neobundlecheck
 "}}}1
 " basic settings{{{1
 filetype plugin indent on
@@ -35,7 +45,7 @@ colorscheme koehler
 syntax on
 runtime macros/matchit.vim
 set foldmethod=indent
-set foldlevel=0
+set foldlevel=1
 set foldcolumn=3
 set modeline
 set modelines=3
@@ -55,44 +65,60 @@ set ruler
 set showmode
 "}}}1
 " remap settings{{{1
-inoremap <C-f> <Right>
-"inoremap <C-b> <Left>
-noremap <Up> <Nop>
-noremap <Down> <Nop>
-noremap <Left> <Nop>
-noremap <Right> <Nop>
-noremap qr :QuickRun<CR>
+inoremap <c-f> <right>
+"inoremap <c-b> <left>
+noremap <up> <nop>
+noremap <down> <nop>
+noremap <left> <nop>
+noremap <right> <nop>
+noremap qr :QuickRun<cr>
 "nnoremap / /\v
 "}}}1
 " altercmd settings{{{1
 call altercmd#load()
-"AlterCommand qr QuickRun
 AlterCommand E Explore
-" vim-indent-guides
+"}}}1
+" vim-indent-guides{{{1
 let g:indent_guides_auto_colors=0
-autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd   ctermbg=110
-autocmd VimEnter,Colorscheme * :hi IndentGuidesEven  ctermbg=140
+autocmd vimenter,colorscheme * :hi indentguidesodd   ctermbg=110
+autocmd vimenter,colorscheme * :hi indentguideseven  ctermbg=140
 let g:indent_guides_enable_on_vim_startup=1
 let g:indent_guides_guide_size=1
 let g:syntastic_check_on_wq = 0
 "}}}1
 "syntastic settings{{{1
 "pep8,pyflakes
-let g:syntastic_python_python_exec = '/Library/Frameworks/Python.framework/Versions/3.4/bin/python3'
+let g:syntastic_python_python_exec = '/library/frameworks/python.framework/versions/3.4/bin/python3'
 let g:syntastic_python_checkers = ['pyflakes', 'pep8']
 
 function! s:Exec()
     exe "!" . &ft . " %"        
 :endfunction         
-command! Exec call <SID>Exec() 
-map <silent> <C-p> :call <SID>Exec()<CR>
+command! Exec call <sid>Exec() 
+map <silent> <c-p> :call <sid>Exec()<cr>
+"}}}1
+"quickrun settings{{{1
+let g:quickrun_config = {
+            \   "_" : {
+            \       "outputter/buffer/split" : ":botright",
+            \       "outputter/buffer/close_on_empty" : 1
+            \   },
+            \}
 "}}}1
 "jedi-vim settings{{{1
 let s:bundle = neobundle#get('jedi-vim')
 function! s:bundle.hooks.on_source(bundle)
-"let g:jedi#rename_command = '<Leader>R'
+"let g:jedi#rename_command = '<leader>r'
+let g:jedi#auto_vim_configuration = 0
+let g:jedi#popup_select_first = 0
 endfunction
 "}}}1
+"autopep8 settings{{{1
+let s:bundle = neobundle#get('vim-autopep8')
+function! s:bundle.hooks.on_source(bundle)
+let g:autopep8_disable_show_diff=1
+endfunction
+"}}}}
 
 " vim: foldmethod=marker
 " vim: foldcolumn=3
