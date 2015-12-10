@@ -1,4 +1,19 @@
-let $PATH = "~/.pyenv/shims:".$PATH
+" function! IncludePath(path)
+"     define delimiter depends on platform
+"     if has('win16') || has('win32') || has('win64')
+"         let delimiter = ";"
+"     else
+"         let delimiter = ":"
+"     endif
+"     let pathlist = split($PATH, delimiter)
+"     if isdirectory(a:path) && index(pathlist, a:path) == -1
+"         let $PATH=a:path.delimiter.$PATH
+"     endif
+" endfunction
+
+" ~/.pyenv/shims を $PATH に追加する
+" これを行わないとpythonが正しく検索されない
+" IncludePath(expand("~/.pyenv/shims"))
 "NeoBundle settings{{{1
 if 0 | endif
 if has('vim_starting')
@@ -14,6 +29,7 @@ call neobundle#begin(expand('~/.vim/bundle/'))
 " Let NeoBundle manage NeoBundle
 " Required:
     NeoBundleFetch 'Shougo/neobundle.vim'
+    NeoBundle 'altercation/vim-colors-solarized'
     NeoBundle 'tpope/vim-surround'
     NeoBundle 'kana/vim-altercmd'
     " NeoBundle 'Townk/vim-autoclose'
@@ -41,8 +57,11 @@ call neobundle#end()
 "}}}1
 " basic settings{{{1
 filetype plugin indent on
-colorscheme koehler
-syntax on
+" colorscheme koehler
+syntax enable
+set background=light
+let g:solarized_termcolors=256
+colorscheme solarized
 runtime macros/matchit.vim
 set foldmethod=indent
 set foldlevel=1
@@ -111,6 +130,22 @@ function! s:bundle.hooks.on_source(bundle)
 "let g:jedi#rename_command = '<leader>r'
 let g:jedi#auto_vim_configuration = 0
 let g:jedi#popup_select_first = 0
+endfunction
+"}}}1
+"vim-pyenv settings{{{1
+let s:bundle = neobundle#get('vim-pyenv')
+function! s:bundle.hooks.on_source(bundle)
+if jedi#init_python()
+    function! s:jedi_auto_force_py_version() abort
+        let major_version = pyenv#python#get_internal_major_version()
+        call jedi#force_py_version(major_version)
+    endfunction
+    augroup vim-pyenv-custom-augroup
+        autocmd! *
+        autocmd User vim-pyenv-activate-post   call s:jedi_auto_force_py_version()
+        autocmd User vim-pyenv-deactivate-post call s:jedi_auto_force_py_version()
+    augroup END
+endif
 endfunction
 "}}}1
 "autopep8 settings{{{1
